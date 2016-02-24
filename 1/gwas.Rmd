@@ -12,13 +12,21 @@ The allele frequency for diploids is given by
 $$ f(A) = \frac{2 \times f(AA) + f(AB)}{2\times populationsize} $$
 $$ f(B) = \frac{2 \times f(BB) + f(AB)}{2\times populationsize} $$
 
+First, we load all required libraries and data files.
 ```{r}
 library(dplyr) #  for manipulating tabular data
-
 dat <- read.csv("genotype.csv")
+```
 
+Though we already know that we have genotype information for 9088 SNPs from 279 individuals, we avoid hard-coding our population size, and instead calculate it from the dimensions of the tabular data we have.
+
+```{r}
 population_size <- dim(dat)[1]
+```
 
+Now we can compute the Minor Allele Frequenct (MAF) for each SNP.
+
+```{r}
 for (i in 2:dim(dat)[2]) { # for each column
 	col <- select(dat, i)
 	
@@ -31,5 +39,34 @@ for (i in 2:dim(dat)[2]) { # for each column
 	
 	cat(colnames(col), min(f_A, f_B), "\n", sep="\t")
 }
+```
 
+To see how many alleles have MAF greater than 0.03, 0.05, and 0.1, we simply make some minor changes in the above `for` loop, and include a counter
+
+```{r}
+counter0 <- 0 # for checking > 0.1
+counter1 <- 0 # for checking > 0.05
+counter2 <- 0 # for checking > 0.03
+
+for (i in 2:dim(dat)[2]) { # for each column
+	col <- select(dat, i)
+	
+	AA <- filter(col, col==0)
+	AB <- filter(col, col==1)
+	BB <- filter(col, col==2)
+	
+	f_A <- (2 * dim(AA)[1] + dim(AB)[1]) / (2 * population_size)
+	f_B <- (2 * dim(BB)[1] + dim(AB)[1]) / (2 * population_size)
+	
+	if (min(f_A, f_B) > 0.1)
+		counter0 <- counter0 + 1
+	if (min(f_A, f_B) > 0.05)
+		counter1 <- counter1 + 1
+	if (min(f_A, f_B) > 0.03)
+		counter2 <- counter2 + 1
+}
+
+cat("# of SNPs with MAF greater than 0.03 is", counter2, "\n", sep=" ")
+cat("# of SNPs with MAF greater than 0.05 is", counter1, "\n", sep=" ")
+cat("# of SNPs with MAF greater than 0.1 is", counter0, "\n", sep=" ")
 ```
