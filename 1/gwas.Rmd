@@ -1,0 +1,35 @@
+---
+layout: page
+title: Genome-wide association studies
+---
+
+# Genome-wide association studies
+
+### Computing Minor Allele Frequency (MAP) for each SNP
+
+The allele frequency for diploids is given by
+
+$$ f(A) = \frac{2 \times f(AA) + f(AB)}{2\times populationsize} $$
+$$ f(B) = \frac{2 \times f(BB) + f(AB)}{2\times populationsize} $$
+
+```{r}
+library(dplyr) #  for manipulating tabular data
+
+dat <- read.csv("genotype.csv")
+
+population_size <- dim(dat)[1]
+
+for (i in 2:dim(dat)[2]) { # for each column
+	col <- select(dat, i)
+	
+	AA <- filter(col, col==0)
+	AB <- filter(col, col==1)
+	BB <- filter(col, col==2)
+	
+	f_A <- (2 * dim(AA)[1] + dim(AB)[1]) / (2 * population_size)
+	f_B <- (2 * dim(BB)[1] + dim(AB)[1]) / (2 * population_size)
+	
+	cat(colnames(col), min(f_A, f_B), "\n", sep="\t")
+}
+
+```
