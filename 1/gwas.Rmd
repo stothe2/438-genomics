@@ -77,4 +77,5 @@ There are **8475** SNPs with MAF > 0.03, **7804** SNPs with MAF > 0.05, and **64
 ### Logistic Regression
 
 $$ \theta(x) = Pr\{y=1 | x\} $$
+
 $$ f(x) = \log\frac{\theta(x)}{1-\theta(x)} = \mu + \beta x $$
