@@ -118,3 +118,10 @@ sumamry(logitfit}
 ```
 
 For SNP 1 it is: ![summary_SNP1](img/gwas_summary.png)</div>
+
+Generally, the strategy now is to test each hypothesis out of the *n* total hypotheses with a significance level or p-value $\alpha$. However, when we have multiple hypotheses and do this, there's a good chance that'd we'd observe a significant result even when there's none.
+
+**Bonferroni correction** is used obtain a new signicance cut-off $\frac{\alpha}{n}$, so that we can maintain our 95% confidence in our analyses as a whole (FWER). 
+
+See the Berkeley course lecture notes [here](http://www.stat.berkeley.edu/~mgoldman/Section0402.pdf) for a good explanation.
+
