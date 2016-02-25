@@ -78,6 +78,7 @@ There are **8475** SNPs with MAF > 0.03, **7804** SNPs with MAF > 0.05, and **64
 
 $$ \theta(x) = Pr\{y=1 | x\} $$
 
-$$ f(x) = \log\frac{\theta(x)}{1-\theta(x)} = \mu + \beta x $$
+$$ f(x) = \log\frac{\theta(x)}{1-\theta(x)} \sim \mu + \beta x $$
 
 In our case, the outcome Y is binary. Let Y = 0 is for controls, Y = 1 is for cases. The predictors X are the genotypes we saw in the previous section: AA (X = 0), AB (X = 1), and BB (X = 2).
+
