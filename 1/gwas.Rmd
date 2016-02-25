@@ -24,7 +24,7 @@ Though we already know that we have genotype information for 9088 SNPs from 279 
 population_size <- dim(dat)[1]
 ```
 
-Now we can compute the Minor Allele Frequenct (MAF) for each SNP.
+Now we can compute the Minor Allele Frequency (MAF) for each SNP.
 
 ```{r}
 for (i in 2:dim(dat)[2]) { # for each column
@@ -70,3 +70,5 @@ cat("# of SNPs with MAF greater than 0.03 is", counter2, "\n", sep=" ")
 cat("# of SNPs with MAF greater than 0.05 is", counter1, "\n", sep=" ")
 cat("# of SNPs with MAF greater than 0.1 is", counter0, "\n", sep=" ")
 ```
+
+There are **8475** SNPs with MAF > 0.03, **7804** SNPs with MAF > 0.05, and **6495** SNPs with MAF > 0.1.
