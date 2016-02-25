@@ -111,11 +111,3 @@ for (i in 2:dim(dat)[2]) { # for each column
 	}
 }
 ```
-
-Now, we can use the summary command.
-```{r}
-summary(logitfit)
-```
-```{r echo=false}
-
-```
