@@ -13,20 +13,20 @@ $$ f(A) = \frac{2 \times f(AA) + f(AB)}{2\times populationsize} $$
 $$ f(B) = \frac{2 \times f(BB) + f(AB)}{2\times populationsize} $$
 
 First, we load all required libraries and data files.
-```{r}
+```{r eval=FALSE}
 library(dplyr) #  for manipulating tabular data
 dat <- read.csv("genotype.csv")
 ```
 
 Though we already know that we have genotype information for 9088 SNPs from 279 individuals, we avoid hard-coding our population size, and instead calculate it from the dimensions of the tabular data we have.
 
-```{r}
+```{r eval=FALSE}
 population_size <- dim(dat)[1]
 ```
 
 Now we can compute the Minor Allele Frequency (MAF) for each SNP.
 
-```{r}
+```{r eval=FALSE}
 for (i in 2:dim(dat)[2]) { # for each column
 	col <- select(dat, i)
 	
@@ -43,7 +43,7 @@ for (i in 2:dim(dat)[2]) { # for each column
 
 To see how many alleles have MAF greater than 0.03, 0.05, and 0.1, we simply make some minor changes in the above `for` loop, and include a counter
 
-```{r}
+```{r eval=FALSE}
 counter0 <- 0 # for checking > 0.1
 counter1 <- 0 # for checking > 0.05
 counter2 <- 0 # for checking > 0.03
@@ -84,7 +84,7 @@ In our case, the outcome Y is binary. Let Y = 0 is for controls, Y = 1 is for ca
 
 We begin by loading and merging the *genotype.csv* and *phenotype.csv* files.
 
-```{r}
+```{r eval=FALSE}
 library(dplyr) #  for manipulating tabular data
 
 geno_dat <- read.csv("genotype.csv")
@@ -94,7 +94,7 @@ dat <- merge(pheno_dat, geno_dat)
 
 For SNPs with MAF greater than at least 0.05, we perform logistic regression. Each SNP column is **factored** to indicate that it is to be used as a categorical variable (possible categories are 0, 1, 2).
 
-```{r}
+```{r eval=FALSE}
 for (i in 2:dim(dat)[2]) { # for each column
 	AA <- filter(dat, dat[,i]==0)
 	AB <- filter(dat, dat[,i]==1)
@@ -111,3 +111,10 @@ for (i in 2:dim(dat)[2]) { # for each column
 	}
 }
 ```
+
+We can use the summary function to see the result.
+```{r eval=FALSE}
+sumamry(logitfit}
+```
+
+For SNP 1 it is: ![summary_SNP1](img/gwas_summary.png)</div>
