@@ -1,1 +1,45 @@
-## K-means clustering
+---
+layout: page
+title: Clustering
+---
+
+### K-means
+
+We'll use the tissues gene expression file to look at clustering. There are expressions for 100 genes in 1816 samples. These samples come from 5 different tissues.
+
+```{r}
+library(rafalib)
+e <- read.delim("data/expr.txt", row.names=1)
+tab <- read.table("data/class_labels.txt", header=T)
+head(tab)
+head(e)[,1:2]
+```
+
+We train the in-built `kmeans` model with 5 clusters on the first 5 samples, for a maximum of 10 iterations.   
+
+```{r, echo=FALSE}
+tissue <- tab[["tissue"]]
+```
+```{r}
+set.seed(1)
+km <- kmeans(t(e[1:5,]), centers=5, iter.max=10)
+cbind(cluster=c(1,2,3,4,5), samples=km$size)
+table(tissue=tissue, cluster=km$cluster)
+```
+
+### Bayesian Information Criterion
+
+We'll now optimize the number of clusters (k) using Bayesian Information Criterion,
+$$BIC = -2 \log \hat{L} + m \log n$$
+
+
+### Visualizing our output
+
+```{r}
+d <- dist(t(e)) # distance between sample points
+km <- kmeans(t(e), centers=5)
+mds <- cmdscale(d)
+
+mypar(1,2)
+plot(mds[,1], mds[,2], col=km$cluster, pch=16)
+```

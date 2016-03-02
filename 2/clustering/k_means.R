@@ -4,7 +4,16 @@ e <- read.delim("data/expr.txt", row.names=1)
 tab <- read.table("data/class_labels.txt", header=T)
 tissue <- tab[["tissue"]]
 
-# t(e) re-orders the matrix so that row=sampleids and column=geneids
-km <- kmeans(t(e[1:5,]), centers = 5, iter.max = 10)
+km <- kmeans(t(e[1:5,]), centers=5, iter.max=10)
 
-table(tissue = tissue, cluster = km$cluster)
+set.seed(1)
+cbind(cluster=c(1,2,3,4,5), samples=km$size)
+table(tissue=tissue, cluster=km$cluster)
+
+## Visualizing
+d <- dist(t(e)) # distance between sample points
+km <- kmeans(t(e), centers=5)
+mds <- cmdscale(d)
+
+mypar(1,2)
+plot(mds[,1], mds[,2], col=km$cluster, pch=16)
