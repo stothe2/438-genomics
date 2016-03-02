@@ -41,5 +41,7 @@ km <- kmeans(t(e), centers=5)
 mds <- cmdscale(d)
 
 mypar(1,2)
+```
+```{r, fig.height=5, fig.align='center'}
 plot(mds[,1], mds[,2], col=km$cluster, pch=16)
 ```
