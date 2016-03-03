@@ -15,4 +15,5 @@ pca.var <- pca$sdev^2
 
 ## Plots of first two PC loadings
 par(mfrow = c(2, 2))
-plot(pc$rotation[, 1], ylim = c(-0.7, 0.7))
+plot(pca$rotation[, 1], pch=16)
+plot(pca$rotation[, 2], pch=23)

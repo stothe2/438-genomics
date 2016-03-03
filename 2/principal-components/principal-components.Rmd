@@ -1,5 +1,5 @@
 ---
-title: "Principal Component Analysis"
+title: "Principal Components Analysis"
 output: pdf_document
 layout: page
 ---
@@ -47,6 +47,6 @@ pca.var[1:10]
 
 ```{r}
 par(mfrow = c(1, 2))
-plot(pca$rotation[1:20, 1], ylim = c(-0.7, 0.7))
-plot(pca$rotation[1:20, 2], ylim = c(-0.7, 0.7))
+plot(pca$rotation[1:20, 1], pch=16)
+plot(pca$rotation[1:20, 2], pch=23)
 ```
