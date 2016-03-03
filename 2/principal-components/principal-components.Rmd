@@ -1,0 +1,52 @@
+---
+title: "Principal Component Analysis"
+output: html_document
+layout: page
+---
+
+### Pre-processing data
+
+We'll be using the gene expression dataset for 17580 genes from 73 samples. There are two phenotypes, 0:no-diesase and 1:Parkinson's. We have an additional dataset containing 3 sample covariates.
+
+```{r}
+library(rafalib)
+
+e <- read.delim("data/counts.txt", row.names=1)
+tab <- read.delim("data/phen.txt")
+c <- read.delim("data/cov.txt", row.names=1)
+```
+
+We take the log-transform of gene expression data and calculate the Z-score.
+
+```{r}
+e_prime <- t(e) # Re-order data
+L <- log2(1 + e_prime) # Log-transform data
+head(L)[,1:2]
+Z <- scale(L) # Z-score
+head(Z)[,1:2]
+```
+
+### Computing principal components and percent variance
+
+We use the `prcomp` function in the **`stats`** package to compute PCs of the scaled data.
+
+```{r}
+pca <- prcomp(L)
+pca$sdev[1:10]
+pca$rotation[1:5,1:2]
+```
+
+We now extract the variances of the components.
+
+```{r}
+pca.var <- pca$sdev^2
+pca.var[1:10]
+```
+
+### Plots of first two PC loadings
+
+```{r}
+par(mfrow = c(1, 2))
+plot(pc$rotation[1:20, 1], ylim = c(-0.7, 0.7))
+plot(pc$rotation[1:20, 2], ylim = c(-0.7, 0.7))
+```
