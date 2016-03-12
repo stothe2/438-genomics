@@ -16,7 +16,7 @@ tab <- read.delim("data/phen.txt")
 c <- read.delim("data/cov.txt", row.names=1)
 ```
 
-We take the log-transform of gene expression data and calculate the Z-score.
+We take the log-transform (normalize) of gene expression data and calculate the Z-score (standardize).
 
 ```{r}
 e_prime <- t(e) # Re-order data
@@ -31,22 +31,24 @@ head(Z)[,1:2]
 We use the `prcomp` function in the **`stats`** package to compute PCs of the scaled data.
 
 ```{r}
-pca <- prcomp(L)
+pca <- prcomp(Z)
 pca$sdev[1:10]
 pca$rotation[1:5,1:2]
 ```
 
-We now extract the variances of the components.
+We now extract the variances of the components, and report the percent variance.
 
 ```{r}
 pca.var <- pca$sdev^2
-pca.var[1:10]
+pca.percent_var <- pca.var/sum(pca.var)
+pca.percent_var[1:10]
 ```
 
 ### Plots of first two PC loadings
 
 ```{r}
-par(mfrow = c(1, 2))
-plot(pca$rotation[1:20, 1], pch=16)
-plot(pca$rotation[1:20, 2], pch=23)
+cols <- c('pink', 'red')
+par(mfrow = c(1, 1))
+plot(pca$x[, 1], pca$x[, 2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
+legend("bottomleft", legend=c("Normal","Parkinson's"), col=cols, pch=16)
 ```

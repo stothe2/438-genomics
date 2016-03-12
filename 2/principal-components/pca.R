@@ -9,11 +9,13 @@ e_prime <- t(e) # Re-order data
 L <- log2(1 + e_prime) # Log-transform data
 Z <- scale(L) # Z-score
 
-## Computing PCs
-pca <- prcomp(L)
+## Computing PCs and percent variance
+pca <- prcomp(Z)
 pca.var <- pca$sdev^2
+pca.percent_var <- pca.var/sum(pca.var)
 
-## Plots of first two PC loadings
-par(mfrow = c(2, 2))
-plot(pca$rotation[, 1], pch=16)
-plot(pca$rotation[, 2], pch=23)
+## Plot of first two PC loadings
+cols <- c('pink', 'red')
+par(mfrow = c(1, 1))
+plot(pca$x[, 1], pca$x[, 2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
+legend("bottomleft", legend=c("Normal","Parkinson's"), col=cols, pch=16)
