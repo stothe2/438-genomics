@@ -12,7 +12,7 @@ We'll be using the gene expression dataset for 17580 genes from 73 samples. Ther
 library(rafalib)
 
 e <- read.delim("data/counts.txt", row.names=1)
-tab <- read.delim("data/phen.txt")
+tab <- read.delim("data/phen.txt", row.names=1)
 c <- read.delim("data/cov.txt", row.names=1)
 ```
 
@@ -55,7 +55,50 @@ legend("bottomleft", legend=c("Normal","Parkinson's"), col=cols, pch=16)
 
 ### Pairwise Pearson correlation between PCs and covariates
 
-Now, we want to see if any of the PCs are strongly correlated with any of the given covariates.
+Now, we want to see if any of the top 10 PCs are strongly correlated with any of the given covariates. Let's begin by looking at all the correlation estimates.
+
+```{r}
+c_prime <- data.frame(t(c))
+cor(pca$x[,1:10], c_prime, use="pairwise.complete.obs", method="pearson")
+```
+
+Let us say a PC is strongly correlated to a covariate if correlation estimate |*r*| > 0.2, and p-value < 0.05. Then, PCs strongly correlated to *post mortem interval* are
+
+```{r}
+for (i in 1:10) { # For top 10 PCs
+  c_test <- cor.test(pca$x[,i], c_prime[,1], use="pairwise.complete.obs", method="pearson")
+  if (abs(c_test$estimate) > 0.2 & c_test$p.value < 0.05) {
+    cat("PC", i, sep="")
+    cat(" estimate =", c_test$estimate, "p-value =", c_test$p.value, "\n", sep=" ")
+  }
+}
+```
+
+Similarly, those strongly correlated to *RNA integrity number* are
+
+```{r echo=FALSE}
+for (i in 1:10) { # For top 10 PCs
+  c_test <- cor.test(pca$x[,i], c_prime[,2], use="pairwise.complete.obs", method="pearson")
+  if (abs(c_test$estimate) > 0.2 & c_test$p.value < 0.05) {
+    cat("PC", i, sep="")
+    cat(" estimate =", c_test$estimate, "p-value =", c_test$p.value, "\n", sep=" ")
+  }
+}
+```
+
+and those to *age*
+
+```{r echo=FALSE}
+for (i in 1:10) { # For top 10 PCs
+  c_test <- cor.test(pca$x[,i], c_prime[,3], use="pairwise.complete.obs", method="pearson")
+  if (abs(c_test$estimate) > 0.2 & c_test$p.value < 0.05) {
+    cat("PC", i, sep="")
+    cat(" estimate =", c_test$estimate, "p-value =", c_test$p.value, "\n", sep=" ")
+  }
+}
+```
+
+### Pairwise Pearson correlation between disease status and covariates
 
 ```{r}
 
