@@ -14,8 +14,8 @@ pca <- prcomp(Z)
 pca.var <- pca$sdev^2
 pca.percent_var <- pca.var/sum(pca.var)
 
-## Plot of first two PC loadings
+## Scatter plot of first two PC loadings
 cols <- c('pink', 'red')
 par(mfrow = c(1, 1))
-plot(pca$x[, 1], pca$x[, 2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
+plot(pca$x[,1], pca$x[,2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
 legend("bottomleft", legend=c("Normal","Parkinson's"), col=cols, pch=16)

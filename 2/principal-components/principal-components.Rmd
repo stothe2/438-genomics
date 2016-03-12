@@ -44,11 +44,19 @@ pca.percent_var <- pca.var/sum(pca.var)
 pca.percent_var[1:10]
 ```
 
-### Plots of first two PC loadings
+### Scatter plot of first two PC loadings
 
 ```{r}
 cols <- c('pink', 'red')
 par(mfrow = c(1, 1))
-plot(pca$x[, 1], pca$x[, 2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
+plot(pca$x[,1], pca$x[,2], col=cols[tab$disease+1], pch=16, xlab="PC1", ylab="PC2")
 legend("bottomleft", legend=c("Normal","Parkinson's"), col=cols, pch=16)
+```
+
+### Pairwise Pearson correlation between PCs and covariates
+
+Now, we want to see if any of the PCs are strongly correlated with any of the given covariates.
+
+```{r}
+
 ```
