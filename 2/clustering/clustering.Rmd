@@ -68,5 +68,5 @@ mds <- cmdscale(d)
 
 mypar(1,1)
 plot(mds[,1], mds[,2], col=km$cluster, pch=16)
-legend(-16.2, -2.5, legend=c(1:5), col=c(1:5), pch=16)
+legend("bottomleft", legend=c(1:5), col=c(1:5), pch=16)
 ```
