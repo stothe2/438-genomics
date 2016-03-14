@@ -1,29 +1,29 @@
 ---
 title: "Clustering"
-output: html_document
+output: pdf_document
 layout: page
 ---
 
 ### K-means
 
-We'll use the tissues gene expression file to look at clustering. There are expressions for 100 genes in 1816 samples. These samples come from 5 different tissues.
+We'll use the tissues gene expression file to look at clustering. There are expressions for 100 genes in 1816 samples. The samples come from 5 different tissues.
 
 ```{r}
 library(rafalib)
 e <- read.delim("data/expr.txt", row.names=1)
-tab <- read.table("data/class_labels.txt", header=T)
-head(tab)
-head(e)[,1:2]
+tab <- read.delim("data/class_labels.txt", row.names=1)
+head(tab) # rows represent samples
+head(e)[,1:2] # rows represent genes
 ```
 
-We train the in-built `kmeans` model with 5 clusters on the first 5 samples, for a maximum of 10 iterations.   
+We train the `kmeans` model in the **`stats`** package on the first 5 samples for total cluster number = 5, for a maximum of 10 iterations.
 
 ```{r, echo=FALSE}
 tissue <- tab[["tissue"]]
 ```
 ```{r}
 set.seed(1)
-km <- kmeans(t(e[1:5,]), centers=5, iter.max=10)
+km <- kmeans(t(e), centers=t(e)[1:5,], iter.max=10)
 cbind(cluster=c(1,2,3,4,5), samples=km$size)
 table(tissue=tissue, cluster=km$cluster)
 ```
@@ -33,16 +33,40 @@ table(tissue=tissue, cluster=km$cluster)
 We'll now optimize the number of clusters (k) using Bayesian Information Criterion,
 $$BIC = -2 \log \hat{L} + m \log n$$
 
+```{r}
+bic <- function(fit) {
+  k <- nrow(fit$centers) # number of clusters
+  m <- ncol(fit$centers) * k # number of free parameters
+  n <- length(fit$cluster) # number of samples
+  D <- fit$tot.withinss
+  return (D + m*log(n))
+}
+```
+
+In a k-means model, the number of free parameters *m* is just the number of clusters *k* times *d*-dimesional points. In our case, *d* = 100 (the number of genes), and *k* = 5 (by choice), so **_m_ = 500**.
+
+Now, let us compute the BIC scores for a k-means model trained using *k* = 2 to 10. In each case, the initial centers are the first *k* points.
+
+```{r}
+bic.values <- c()
+for (k in 2:10) {
+  bic.values[k-1] <- bic(kmeans(t(e), centers=t(e)[1:k,], iter.max=10))
+}
+par(mfrow = c(1, 1))
+plot(c(2:10), bic.values, xlab="Number of clusters (k)", ylab="BIC scores", pch=1)
+data.frame(k=c(2:10), bic=bic.values)
+```
+
+We see that the BIC score is minimum for **k = 5**. Thus, this is the optimal number of clusters for our example.
 
 ### Visualizing our output
 
-```{r}
+```{r, fig.height=5, fig.align='center'}
 d <- dist(t(e)) # distance between sample points
 km <- kmeans(t(e), centers=5)
 mds <- cmdscale(d)
 
-mypar(1,2)
-```
-```{r, fig.height=5, fig.align='center'}
+mypar(1,1)
 plot(mds[,1], mds[,2], col=km$cluster, pch=16)
+legend(-16.2, -2.5, legend=c(1:5), col=c(1:5), pch=16)
 ```
