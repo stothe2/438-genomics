@@ -1,0 +1,47 @@
+---
+title: "Support Vector Machines"
+output: pdf_document
+layout: page
+---
+
+### Introduction
+
+We are going to work with a total of 3175 DNA sequences, of which 2175 are training instances and 1000 are test instances. Each DNA sequence is of length 60. Our task is to identify whether or not a given DNA sequence would undergo splicing. Phenotype labels are S:spliced and N:not-spliced.
+
+```{r eval=FALSE}
+library(dplyr) # for manipulating tabular data
+```
+```{r}
+train_sequence <- read.table("data/train_sequence.txt", header=T)
+test_sequence <- read.table("data/test_sequence.txt", header=T)
+head(train_sequence)
+```
+
+Let's first compute the frequencies for 2-mers, 3-mers and 4-mers for each DNA sequence in our training and test data.
+
+The set of all possible 2-mers is
+
+```{r}
+base <- c("A", "T", "C", "G")
+
+combns <- expand.grid(base, base)
+combns <- within(combns, two_mers<-paste(Var1, Var2, sep=""))
+two_mers <- combns$two_mers
+
+two_mers
+```
+
+The same can be done for 3-mers and 4-mers.
+
+```{r}
+combns <- expand.grid(base, base, base)
+combns <- within(combns, three_mers<-paste(Var1, Var2, Var3, sep=""))
+three_mers <- combns$three_mers
+
+combns <- expand.grid(base, base, base, base)
+combns <- within(combns, four_mers<-paste(Var1, Var2, Var3, Var4, sep=""))
+four_mers <- combns$four_mers
+```
+
+The total features for each DNA sequence is therefore 16 + 64 + 256 = 366 features (adding counts of `two_mers`, `three_mers`, and `four_mers`).
+
