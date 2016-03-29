@@ -1,0 +1,57 @@
+---
+title: "Population Structure using PCA"
+output: pdf_document
+layout: page
+---
+
+We are going to use a small subset of HashMap project data: 279 samples of 9026 SNPs taken from 4 different populations---Centreal European (CEU), African (YRI), Japanese (JPT) and Chinese (HCB). We're going to see if PCA can identify population structure.
+
+```{r}
+library(rafalib)
+e <- read.csv("data/genotype_population.csv", row.names=1)
+tab <- read.csv("data/population_info.csv", row.names=1)
+head(t(e))[,1:5] # rows represent genes
+```
+
+### Standardizing data
+
+We begin by standardizing each SNP to have 0 mean and standard deviation of 1.
+
+```{r}
+E <- scale(e) # standardize
+```
+
+### Dimension reduction
+
+Dimension reduction is performed to better visualize data. We can use principal components analysis (PCA) for this. Say that the original data is represented by *n* data points. The goal is to reduce this to a subspace of *d* points while mainting the variability in data. The new subspace is represented by *d* orthogonal vectors called principal components, and *d* < *n*.
+
+Let us see dimension reduction over feature space.
+
+```{r}
+pca <- prcomp(t(E), center=FALSE, scale=FALSE) # Feature space
+pca.var <- pca$sdev^2
+pca.percent_var <- pca.var/sum(pca.var)
+barplot(pca.percent_var[1:20], ylab="Percent Variances", xlab="Principal Components")
+```
+
+As you can see, most of the variation in the data is expressed by the first three components. Similarly, we can perform dimension reduction over sample space.
+
+```{r, eval=FALSE, echo=FALSE}
+# ?????????? T^T
+pca.other <- prcomp(E, center=FALSE, scale=FALSE) # Sample space
+pca.other.var <- pca.other$sdev^2
+pca.other.percent_var <- pca.other.var/sum(pca.other.var)
+barplot(pca.other.percent_var[1:20], ylab="Percent Variances", xlab="Principal Components")
+```
+
+### Scatter plots
+
+```{r, eval=FALSE, echo=FALSE}
+cols <- c('red', 'blue', 'darkorange', 'darkgreen')
+# ??????????? T^T
+plot(pca$x[,1], pca$x[,2], col=cols[tab$V2], pch=16, xlab="PC1", ylab="PC2")
+plot(pca$x[,2], pca$x[,3], col=cols[tab$V2], pch=16, xlab="PC2", ylab="PC3")
+plot(pca$x[,3], pca$x[,4], col=cols[tab$V2], pch=16, xlab="PC3", ylab="PC4")
+plot(pca$x[,8], pca$x[,9], col=cols[tab$V2], pch=16, xlab="PC8", ylab="PC9")
+```
+
