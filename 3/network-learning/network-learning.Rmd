@@ -1,0 +1,151 @@
+---
+title: "Network Learning"
+output: pdf_document
+layout: page
+---
+
+Our goal is to contruct gene co-expression networks of types WGCNA and Graphical Lasso [from the given gene expression data] and compare them.
+
+```{r}
+library(igraph)
+library(proxy) # For similarity matrix
+e <- read.delim("data/expr_ceph_utah_1000.txt", row.names=1)
+head(t(e))[,1:5] # Rows are genes and columns are samples
+```
+
+
+### Weighted Gene Co-Expression Network Analysis (WGCNA)
+
+The process flow for creating a WGCNA is straightforward. Starting with a **gene expression matrix**, we create a **similarity matrix** by carrying out a similarity measure selection between genes *i* and *j*. From the similiarity matrix, we construct an **adjacency matrix** using a threshold measure *tau*. We then plot the graph from the adjacency matrix.
+
+We will use absolute pearson correlation as our measure of similarity between genes *i* and *j*, that is *S(i,j) = |corr(i,j)|*. The similarity matrix *S* is a symmetrix matrix with values in range [0,1] and a unit diagonal.
+
+```{r}
+s <- abs(as.matrix(simil(t(e)), FUN=NULL, diag=1)) # Similarity matrix
+s[1:5,1:5]
+```
+
+Next, we perform "soft" thresholding via scale-free topology *à la* Zhang and Horvath 2005; since gene co-expression networks have been found to at least approximately display scale-free topology, so thresholding values that do not give rise to networks displaying scale-free topology should not be considered.
+
+```{r}
+sft.power.fit <- function(x) {
+  a <- s * (s >= x) # Adjacency matrix with threshold x
+  g <- graph.adjacency(a, mode="undirected", weighted=TRUE, diag=TRUE) # Construct WGC network
+  
+  # Degree of each vertex, not counting self-loops
+  d <- degree(g, v=V(g), loops=FALSE)
+  # Continuous distribution for linear model fitting
+  deg <- 1:max(d)
+  
+  # Proportion of nodes with degree d
+  d.dist <- degree.distribution(g, v=V(g), loops=FALSE, cumulative=FALSE)
+  # Only account for frequencies of non-zero degree vertices
+  d.dist <- d.dist[2:length(d.dist)]
+  
+  # Remove all zero frequency positions
+  non.zero.positions <- which( d.dist!=0 )
+  deg <- deg[non.zero.positions]
+  d.dist <- d.dist[non.zero.positions]
+  
+  # Linear model fitting
+  SFT.model <- lm(log(d.dist) ~ log(deg))
+  SFT.R.sqr <- summary(SFT.model)$r.squared
+  SFT.alpha <- -coef(SFT.model)[[2]]
+  return(SFT.R.sqr)
+}
+
+tau <- c(0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8)
+R.sqr <- sapply(tau, sft.power.fit)
+cbind(tau, R.sqr) # Display tau vs R-squared values
+
+plot(x=tau, y=R.sqr) # Scatter plot
+```
+
+The smallest *tau* that produces R-squared greater than or equal to 0.8 is **_tau_ = 0.5**.
+
+Let us plot the node degree distribution plot for our weighted gene co-expression network with **_tau_ = 0.5**.
+
+```{r, echo=FALSE}
+a <- s * (s >= 0.5) # Adjacency matrix with threshold 0.5
+wgcna_net <- graph.adjacency(a, mode="undirected", weighted=TRUE, diag=TRUE) # Construct WGC network
+  
+# Degree of each vertex, not counting self-loops
+d <- degree(wgcna_net, v=V(wgcna_net), loops=FALSE)
+# Continuous distribution for linear model fitting
+deg <- 1:max(d)
+
+# Proportion of nodes with degree d
+d.dist <- degree.distribution(wgcna_net, v=V(wgcna_net), loops=FALSE, cumulative=FALSE)
+# Only account for frequencies of non-zero degree vertices
+d.dist <- d.dist[2:length(d.dist)]
+  
+# Remove all zero frequency positions
+non.zero.positions <- which( d.dist!=0 )
+deg <- deg[non.zero.positions]
+d.dist <- d.dist[non.zero.positions]
+```
+
+```{r}
+# Histogram plot of node degrees in wgcna_net
+hist(x=deg, breaks=length(deg)/4, freq=TRUE,
+     xlab="Degree of node", ylab="Number of nodes",
+     main="Node degree distribution for WGCN with tau = 0.5", col="gray")
+```
+
+
+### Graphical Lasso
+
+
+```{r}
+c <- cov(e) # Sample covariance matrix
+c[1:5,1:5]
+
+library(glasso)
+
+p <- glasso(c, rho=0.55, thr=1e-4, penalize.diagonal=FALSE) # Precision matrix
+colnames(p$wi) <- colnames(e)
+rownames(p$wi) <- colnames(e)
+glasso_net <- graph.adjacency(p$wi, mode="undirected", weighted=TRUE, diag=TRUE) # Construct glasso network
+```
+
+```{r, echo=FALSE}
+# Degree of each vertex, not counting self-loops
+d <- degree(glasso_net, v=V(glasso_net), loops=FALSE)
+# Continuous distribution for linear model fitting
+deg <- 1:max(d)
+
+# Proportion of nodes with degree d
+d.dist <- degree.distribution(glasso_net, v=V(glasso_net), loops=FALSE, cumulative=FALSE)
+# Only account for frequencies of non-zero degree vertices
+d.dist <- d.dist[2:length(d.dist)]
+  
+# Remove all zero frequency positions
+non.zero.positions <- which( d.dist!=0 )
+deg <- deg[non.zero.positions]
+d.dist <- d.dist[non.zero.positions]
+```
+
+```{r}
+# Histogram plot of node degrees in glasso_net
+hist(x=deg, breaks=length(deg)/4, freq=TRUE,
+     xlab="Degree of node", ylab="Number of nodes",
+     main="Node degree distribution for Graphical Lasso network", col="gray")
+```
+
+
+### Comparing WGCNA network and Graphical Lasso network
+
+
+```{r}
+gsize(glasso_net) - ncol(e) # Edge count for glasso_net, discounting self-loops
+gsize(wgcna_net) - ncol(e) # Edge count for wgcna_net, discounting self-loops
+
+# Number of edges common to both networks, discounting self-loops
+length(intersection(E(glasso_net), E(wgcna_net))) - ncol(e)
+```
+
+All edges present in glasso\_net are present in wgcna\_net, that is, glasso\_net is a subset of wgcna\_net. However, the revserse is not true: wgcna\_net has some extra edges.
+
+The proportion of edges present in wgcna\_net also present in glasso\_net is *2769/7690 = 0.360078*. The proportion of edges present in glasso\_net also present in wgcna\_net is *2769/2769 = 1.0*.
+
+Ideally, we want to separate indirection relationships from direct relationships. Graphical Lasso does so [with the regularization term, encouraging sparsity], but WGCNA does not.
