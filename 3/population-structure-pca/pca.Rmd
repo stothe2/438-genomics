@@ -7,7 +7,8 @@ layout: page
 We are going to use a small subset of HashMap project data: 279 samples of 9026 SNPs taken from 4 different populations---Centreal European (CEU), African (YRI), Japanese (JPT) and Chinese (HCB). We're going to see if PCA can identify population structure.
 
 ```{r}
-library(rafalib)
+library(ade4)
+library(adegenet)
 e <- read.csv("data/genotype_population.csv", row.names=1)
 tab <- read.csv("data/population_info.csv", row.names=1)
 head(t(e))[,1:5] # rows represent genes
@@ -21,37 +22,41 @@ We begin by standardizing each SNP to have 0 mean and standard deviation of 1.
 E <- scale(e) # standardize
 ```
 
-### Dimension reduction
+### Dimensionality reduction
 
-Dimension reduction is performed to better visualize data. We can use principal components analysis (PCA) for this. Say that the original data is represented by *n* data points. The goal is to reduce this to a subspace of *d* points while mainting the variability in data. The new subspace is represented by *d* orthogonal vectors called principal components, and *d* < *n*.
+Dimension reduction is performed to better visualize data. Say that the original data is represented by *n* data points. The goal is to reduce this to a subspace of *d* points while mainting the variability in data. The new subspace is represented by *d* orthogonal vectors called principal components, and *d* < *n*.
 
 Let us see dimension reduction over feature space.
 
 ```{r}
-pca <- prcomp(t(E), center=FALSE, scale=FALSE) # Feature space
-pca.var <- pca$sdev^2
-pca.percent_var <- pca.var/sum(pca.var)
-barplot(pca.percent_var[1:20], ylab="Percent Variances", xlab="Principal Components")
+pca <- dudi.pca(t(E), center=FALSE, scale=FALSE, scannf=FALSE, nf=20) # Feature space
+eig.perc <- pca$eig/sum(pca$eig) # Percent of variance
+barplot(eig.perc[1:20], ylim=c(0,0.12), ylab="Percent Variance", xlab="Principal Component")
 ```
 
-As you can see, most of the variation in the data is expressed by the first three components. Similarly, we can perform dimension reduction over sample space.
+As you can see, most of the variance in the data is expressed by the first two components. Similarly, we can perform dimension reduction over sample space.
 
-```{r, eval=FALSE, echo=FALSE}
-# ?????????? T^T
-pca.other <- prcomp(E, center=FALSE, scale=FALSE) # Sample space
-pca.other.var <- pca.other$sdev^2
-pca.other.percent_var <- pca.other.var/sum(pca.other.var)
-barplot(pca.other.percent_var[1:20], ylab="Percent Variances", xlab="Principal Components")
+```{r}
+pca2 <- dudi.pca(E, center=FALSE, scale=FALSE, scannf=FALSE, nf=20) # Sample space
+eig.perc2 <- pca2$eig/sum(pca2$eig) # Percent of variance
+barplot(eig.perc2[1:20], ylim=c(0,0.12), ylab="Percent Variance", xlab="Principal Component")
 ```
 
 ### Scatter plots
 
-```{r, eval=FALSE, echo=FALSE}
-cols <- c('red', 'blue', 'darkorange', 'darkgreen')
-# ??????????? T^T
-plot(pca$x[,1], pca$x[,2], col=cols[tab$V2], pch=16, xlab="PC1", ylab="PC2")
-plot(pca$x[,2], pca$x[,3], col=cols[tab$V2], pch=16, xlab="PC2", ylab="PC3")
-plot(pca$x[,3], pca$x[,4], col=cols[tab$V2], pch=16, xlab="PC3", ylab="PC4")
-plot(pca$x[,8], pca$x[,9], col=cols[tab$V2], pch=16, xlab="PC8", ylab="PC9")
-```
+In the first two plots (*PC1 vs PC2* and *PC2 vs PC3*), we see **three** distinct population clusters. The last two plots do not show any population structure.
 
+```{r}
+s.class(pca$c1[,1:2], fac=tab$V2, col=transp(funky(5),.6),
+        axesell=FALSE, cstar=0, cpoint=1)
+add.scatter.eig(pca$eig[1:20],20,1,2, ratio=.3)
+s.class(pca$c1[,2:3], fac=tab$V2, col=transp(funky(5),.6),
+        axesell=FALSE, cstar=0, cpoint=1)
+add.scatter.eig(pca$eig[1:20],20,2,3, ratio=.3)
+s.class(pca$c1[,3:4], fac=tab$V2, col=transp(funky(5),.6),
+        axesell=FALSE, cstar=0, cpoint=1)
+add.scatter.eig(pca$eig[1:20],20,3,4, ratio=.3)
+s.class(pca$c1[,8:9], fac=tab$V2, col=transp(funky(5),.6),
+        axesell=FALSE, cstar=0, cpoint=1)
+add.scatter.eig(pca$eig[1:20],20,8,9, ratio=.3)
+```
